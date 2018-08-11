@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">SP Project</string>
+    <string name="server_client_id">718861489684-nbli9ar9ta6v4uih2sf1d9rdqr4hkqcl.apps.googleusercontent.com</string>
+
+    <string name="patient">Patient</string>
+    <string name="preventor">Preventor</string>
+    <string name="Online">Online</string>
+    <string name="offline_status">You are offline.</string>
+
+</resources>
