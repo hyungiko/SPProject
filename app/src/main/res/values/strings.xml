@@ -7,4 +7,9 @@
     <string name="Online">Online</string>
     <string name="offline_status">You are offline.</string>
 
+    <string name="welcome_msg">Hi, how are you?</string>
+
+    <string name="exist_chatroom">EXIT</string>
+    <string name="matching_preventor">MATCHING</string>
+
 </resources>

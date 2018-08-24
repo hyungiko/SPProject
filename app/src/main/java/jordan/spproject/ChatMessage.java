@@ -8,20 +8,27 @@ import java.util.Date;
 
 public class ChatMessage {
 
-    private String messageText;
-    private String messageUser;
-    private long messageTime;
+    public String messageText;
+    public String messageUser;
+    public String test;
+    public long messageTime;
 
-    public ChatMessage(String messageText, String messageUser) {
+    public ChatMessage(String messageText, String messageUser, String messageEmail, String test2) {
         this.messageText = messageText;
         this.messageUser = messageUser;
-
+        this.test = messageEmail;
+        test2 = "hihi";
         // Initialize to current time
         messageTime = new Date().getTime();
     }
 
     public ChatMessage(){
 
+    }
+
+
+    public String getEmail() {
+        return test;
     }
 
     public String getMessageText() {

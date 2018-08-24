@@ -15,7 +15,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import java.util.HashMap;
 import java.util.Map;
 
-import reference.GlobalVariable;
+import jordan.spproject.reference.GlobalVariable;
 
 /**
  * Created by hyungiko on 8/8/18.

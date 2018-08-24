@@ -15,7 +15,7 @@ import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
-import reference.GlobalVariable;
+import jordan.spproject.reference.GlobalVariable;
 
 /**
  * Created by hyungiko on 7/26/18.
@@ -38,7 +38,7 @@ public class SignIn extends Activity implements View.OnClickListener {
             GlobalVariable.isJustSignedUp = true;
 
             finish();
-            this.overridePendingTransition(0, 0);
+//            this.overridePendingTransition(0, 0);
         }
     }
 
@@ -55,6 +55,7 @@ public class SignIn extends Activity implements View.OnClickListener {
 
         initGoogleSign();
     }
+
 
     public void initGoogleSign() {
         // [START configure_signin]
