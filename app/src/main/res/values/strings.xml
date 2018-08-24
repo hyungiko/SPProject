@@ -10,6 +10,9 @@
     <string name="welcome_msg">Hi, how are you?</string>
 
     <string name="exist_chatroom">EXIT</string>
+    <string name="no_matching_result">No Matching Result</string>
+    <string name="patient_exit">Patient has left this chatroom. </string>
+    <string name="preventor_exit">Preventor has left this chatroom. </string>
     <string name="matching_preventor">MATCHING</string>
 
 </resources>

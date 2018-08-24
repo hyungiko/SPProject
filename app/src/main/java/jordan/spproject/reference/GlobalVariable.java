@@ -17,6 +17,7 @@ public class GlobalVariable {
     static public final String REJECT_MSG = "@@reject";
     static public final String ACCEPT_MSG = "@@accept";
     static public final String EXIT_MSG = "@@exit";
+    static public final String PREVENTOR_EXIT_MSG = "@@preventor_exit";
     static public final String REQUEST_MSG = "Matching a Preventor...";
 
     public static boolean isJustSignedUp = false;

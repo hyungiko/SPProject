@@ -124,10 +124,10 @@ public class FragmentOne extends Fragment implements View.OnClickListener{
                             if(progressDialog != null && progressDialog.isShowing()) {
                                 progressDialog.dismiss();
                                 btnCheckOnline.setText(getResources().getString(R.string.matching_preventor));
-                                makeDialogForRejectNoti();
+                                makeDialogForNoti(getResources().getString(R.string.no_matching_result));
                             }
                         } else
-                            initChattingViewForPatient(preventorList.getString(0), view);
+                            initChattingViewForPatient(preventorList.getString(0));
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -161,6 +161,9 @@ public class FragmentOne extends Fragment implements View.OnClickListener{
                     setChattingViewForPreventor(gPreventorId, gPatientId, view);
                 } else if(msg.what == 5000) {
                     initChattingViewForPreventor(gPreventorId);
+                } else if(msg.what == 6000) {
+                    adapter = null;
+                    listOfMessages.setAdapter(adapter);
                 }
             }
         };
@@ -206,6 +209,11 @@ public class FragmentOne extends Fragment implements View.OnClickListener{
     }
 
     private void setOffline(View view) {
+        (new FirebaseProcessor()).sendChattingMessage(GoogleSignIn.getLastSignedInAccount(getContext()),
+                gPreventorId,
+                GlobalVariable.PREVENTOR_EXIT_MSG,
+                gPatientId);
+
         tvPreventorStatus.setText("You are offline.");
         btnOnOff.setText("ONLINE");
         GlobalVariable.saveStringPreferences(getContext(), GlobalVariable.keyOnline, GlobalVariable.keyFalse);
@@ -252,10 +260,24 @@ public class FragmentOne extends Fragment implements View.OnClickListener{
 
         String userType = GlobalVariable.loadPreferences(getContext(), GlobalVariable.keyUserType);
         if(userType != null && userType.equals(GlobalVariable.keyPreventor)) {
+            if(chattingLatout.getVisibility() == View.VISIBLE) {
+                (new FirebaseProcessor()).sendChattingMessage(GoogleSignIn.getLastSignedInAccount(getContext()),
+                        gPreventorId,
+                        GlobalVariable.PREVENTOR_EXIT_MSG,
+                        gPatientId);
+            }
+
             GlobalVariable.saveStringPreferences(getContext(), GlobalVariable.keyOnline, GlobalVariable.keyFalse);
             sendUpdatePreventorStatus(false);
             String preventorId = GoogleSignIn.getLastSignedInAccount(getContext()).getEmail().replace('@', '_').replace('.', '_');
             (new FirebaseProcessor()).removeDummyChatRoom(preventorId);
+        } else if(userType != null && userType.equals(GlobalVariable.keyPatient)) {
+            if(btnCheckOnline.getText().toString().equals(getResources().getString(R.string.exist_chatroom))) {
+                (new FirebaseProcessor()).sendChattingMessage(GoogleSignIn.getLastSignedInAccount(getContext()),
+                        gPreventorId,
+                        GlobalVariable.EXIT_MSG,
+                        gPatientId);
+            }
         }
 
         bManager.unregisterReceiver(broadcastReceiver);
@@ -283,7 +305,7 @@ public class FragmentOne extends Fragment implements View.OnClickListener{
         }
     }
 
-    private void initChattingViewForPatient(final String preventorId, final View view) {
+    private void initChattingViewForPatient(final String preventorId) {
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(getContext());
         final String patientId = account.getEmail().replace('@', '_').replace('.', '_');
         final String displayName = account.getDisplayName();
@@ -318,14 +340,15 @@ public class FragmentOne extends Fragment implements View.OnClickListener{
                                         , new DatabaseReference.CompletionListener() {
                                             @Override
                                             public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
-                                                setChattingViewForPatient(preventorId, patientId, view);
+                                                setChattingViewForPatient(preventorId, patientId);
                                             }
                                         });
 
                     } else if(model != null && model.getMessageText().equals(GlobalVariable.REJECT_MSG)) {
                         (new FirebaseProcessor()).removeDummyChatRoom(preventorId);
                         progressDialog.dismiss();
-                        makeDialogForRejectNoti();
+                        makeDialogForNoti(getResources().getString(R.string.no_matching_result));
+                        btnCheckOnline.setText(getResources().getString(R.string.matching_preventor));
                     }
 
                     Log.e(TAG, "messageText: "+model.getMessageText());
@@ -345,7 +368,7 @@ public class FragmentOne extends Fragment implements View.OnClickListener{
                 patientId);
     }
 
-    private void setChattingViewForPatient(final String preventorId, final String patientId, View view) {
+    private void setChattingViewForPatient(final String preventorId, final String patientId) {
         hideChatting(false);
 
         fab.setOnClickListener(null);
@@ -368,30 +391,37 @@ public class FragmentOne extends Fragment implements View.OnClickListener{
                 .child(patientId)) {
             @Override
             protected void populateView(View v, ChatMessage model, int position) {
-                // Get references to the views of message.xml
-                TextView messageText = (TextView)v.findViewById(R.id.message_text);
-                TextView messageUser = (TextView)v.findViewById(R.id.message_user);
-                TextView messageTime = (TextView)v.findViewById(R.id.message_time);
+                if(model.getMessageText().equals(GlobalVariable.PREVENTOR_EXIT_MSG)) {
+                    (new FirebaseProcessor()).removeExitMsg(preventorId, patientId, adapter.getRef(position).getKey());
+                    btnCheckOnline.setText(getResources().getString(R.string.matching_preventor));
+                    makeDialogForNoti(getResources().getString(R.string.preventor_exit));
+                    hideChatting(true);
+                    handler.sendEmptyMessageAtTime(6000, 1000);
+                } else {
+                    // Get references to the views of message.xml
+                    TextView messageText = (TextView)v.findViewById(R.id.message_text);
+                    TextView messageUser = (TextView)v.findViewById(R.id.message_user);
+                    TextView messageTime = (TextView)v.findViewById(R.id.message_time);
 
-                // Set their text
-                messageText.setText(model.getMessageText());
-                messageUser.setText(model.getMessageUser());
+                    // Set their text
+                    messageText.setText(model.getMessageText());
+                    messageUser.setText(model.getMessageUser());
 
-                Log.e(TAG, "messageText: "+model.getMessageText());
-                // Format the date before showing it
-                messageTime.setText(DateFormat.format("dd-MM-yyyy (HH:mm:ss)",
-                        model.getMessageTime()));
+                    Log.e(TAG, "messageText: "+model.getMessageText());
+                    // Format the date before showing it
+                    messageTime.setText(DateFormat.format("dd-MM-yyyy (HH:mm:ss)",
+                            model.getMessageTime()));
 
-                final int count = listOfMessages.getAdapter().getCount()-1;
+                    final int count = listOfMessages.getAdapter().getCount()-1;
 
-                listOfMessages.clearFocus();
-                listOfMessages.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        listOfMessages.setSelection(count);
-                    }
-                });
-
+                    listOfMessages.clearFocus();
+                    listOfMessages.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listOfMessages.setSelection(count);
+                        }
+                    });
+                }
             }
         };
 
@@ -411,7 +441,7 @@ public class FragmentOne extends Fragment implements View.OnClickListener{
                         (new FirebaseProcessor()).removeDummyChatRoom(preventorId);
                         makeDialogForChattingRequest(preventorId, model.getEmail());
                     }
-                    Log.e(TAG, "messageText: "+model.getMessageText());
+                    Log.e(TAG, "initChattingViewForPreventor: "+model.getMessageText());
                 } catch (NullPointerException e) {
                     e.printStackTrace();
                 }
@@ -448,11 +478,10 @@ public class FragmentOne extends Fragment implements View.OnClickListener{
             protected void populateView(View v, ChatMessage model, int position) {
                 // Get references to the views of message.xml
                 if(model.getMessageText().equals(GlobalVariable.EXIT_MSG)) {
-                    hideChatting(true);
                     (new FirebaseProcessor()).removeExitMsg(preventorId, patientId, adapter.getRef(position).getKey());
+                    makeDialogForNoti(getResources().getString(R.string.patient_exit));
+                    hideChatting(true);
                     handler.sendEmptyMessageAtTime(5000, 1000);
-//                    adapter = null;
-//                    listOfMessages.setAdapter(adapter);
                 } else {
                     TextView messageText = (TextView)v.findViewById(R.id.message_text);
                     TextView messageUser = (TextView)v.findViewById(R.id.message_user);
@@ -505,64 +534,58 @@ public class FragmentOne extends Fragment implements View.OnClickListener{
     }
 
     private void makeDialogForChattingRequest(final String preventorId, final String patientId) {
-        if(mAlertDialog == null) {
-            AlertDialog.Builder builder;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                builder = new AlertDialog.Builder(getContext(), android.R.style.Theme_Material_Dialog_Alert);
-            } else {
-                builder = new AlertDialog.Builder(getContext());
-            }
-
-            builder.setTitle("Chatting Request")
-                    .setMessage("Do you accept "+patientId+"'s chatting request?")
-                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            // continue with delete
-                            gPreventorId = preventorId;
-                            gPatientId = patientId;
-                            handler.sendEmptyMessageAtTime(4000, 0);
-                        }
-                    })
-                    .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            // send reject message
-                            gPreventorId = preventorId;
-                            gPatientId = patientId;
-                            handler.sendEmptyMessageAtTime(3000, 0);
-                        }
-                    })
-                    .setIcon(android.R.drawable.ic_dialog_alert);
-
-            mAlertDialog = builder.create();
-            mAlertDialog.show();
-        } else if(!mAlertDialog.isShowing()){
-            mAlertDialog.show();
+        mAlertDialog = null;
+        AlertDialog.Builder builder;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            builder = new AlertDialog.Builder(getContext(), android.R.style.Theme_Material_Dialog_Alert);
+        } else {
+            builder = new AlertDialog.Builder(getContext());
         }
+
+        builder.setTitle("Chatting Request")
+                .setMessage("Do you accept "+patientId+"'s chatting request?")
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // continue with delete
+                        gPreventorId = preventorId;
+                        gPatientId = patientId;
+                        handler.sendEmptyMessageAtTime(4000, 0);
+                    }
+                })
+                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // send reject message
+                        gPreventorId = preventorId;
+                        gPatientId = patientId;
+                        handler.sendEmptyMessageAtTime(3000, 0);
+                    }
+                })
+                .setIcon(android.R.drawable.ic_dialog_alert);
+
+        mAlertDialog = builder.create();
+        mAlertDialog.show();
     }
 
-    private void makeDialogForRejectNoti() {
-        if(mAlertDialog == null) {
-            AlertDialog.Builder builder;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                builder = new AlertDialog.Builder(getContext(), android.R.style.Theme_Material_Dialog_Alert);
-            } else {
-                builder = new AlertDialog.Builder(getContext());
-            }
-
-            builder.setTitle("Notification")
-                    .setMessage("No Matching Result")
-                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            // continue with delete
-                        }
-                    })
-                    .setIcon(android.R.drawable.ic_dialog_alert);
-
-            mAlertDialog = builder.create();
-            mAlertDialog.show();
-        } else if(!mAlertDialog.isShowing()){
-            mAlertDialog.show();
+    private void makeDialogForNoti(String msg) {
+        mAlertDialog = null;
+        AlertDialog.Builder builder;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            builder = new AlertDialog.Builder(getContext(), android.R.style.Theme_Material_Dialog_Alert);
+        } else {
+            builder = new AlertDialog.Builder(getContext());
         }
+
+        builder.setTitle("Notification")
+                .setMessage(msg)
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // continue with delete
+                    }
+                })
+                .setIcon(android.R.drawable.ic_dialog_alert);
+
+        mAlertDialog = builder.create();
+        mAlertDialog.show();
     }
 
         @Override
