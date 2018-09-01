@@ -12,6 +12,7 @@ public class GlobalVariable {
     static public final String sharedName	= "SP Project";
     static public final String ONLINE_PREVENTOR_UPDATE 	= "preventorUpdate";
     static public final String LIST_PREVENTOR = "listPreventor";
+    static public final String LIST_HISTORY = "listPreventor";
     static public final String GREETING_MSG = "Hi, how are you?";
     static public final String START_MSG = "@@start";
     static public final String REJECT_MSG = "@@reject";

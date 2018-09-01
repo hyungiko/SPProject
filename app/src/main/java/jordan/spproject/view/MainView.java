@@ -49,7 +49,7 @@ import jordan.spproject.reference.GlobalVariable;
  * Created by hyungiko on 8/17/18.
  */
 
-public class FragmentOne extends Fragment implements View.OnClickListener{
+public class MainView extends Fragment implements View.OnClickListener{
     private String TAG = "MainActivity";
     private FirebaseListAdapter<ChatMessage> adapter;
     private LocalBroadcastManager bManager;
@@ -66,7 +66,7 @@ public class FragmentOne extends Fragment implements View.OnClickListener{
     private ProgressDialog progressDialog;
     private RelativeLayout chattingLatout;
 
-    public FragmentOne() {
+    public MainView() {
         // Required empty public constructor
     }
 
@@ -84,7 +84,7 @@ public class FragmentOne extends Fragment implements View.OnClickListener{
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
 
-        View rootView = inflater.inflate(R.layout.fragment_one, container, false);
+        View rootView = inflater.inflate(R.layout.main_view, container, false);
         initiate(rootView);
 
         return rootView;

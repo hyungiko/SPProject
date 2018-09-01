@@ -1,0 +1,57 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:weightSum="1"
+    android:padding="2dp">
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:weightSum="1"
+        android:layout_weight="0.8">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="0.5">
+            <TextView
+                android:id="@+id/chatterId"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="Marshmallow"
+                android:textSize="17sp"
+                android:paddingLeft="20dp"
+                android:textColor="@android:color/black"
+                android:gravity="left"/>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="0.5">
+            <TextView
+                android:id="@+id/chattingContent"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="Marshmallow"
+                android:textSize="15sp"
+                android:paddingLeft="20dp"
+                android:textColor="@android:color/black"
+                android:gravity="left" />
+        </LinearLayout>
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:layout_weight="0.2">
+        <TextView
+            android:id="@+id/chattingTime"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="Marshmallow"
+            android:textColor="@android:color/black"
+            android:paddingRight="5dp"
+            android:gravity="right" />
+
+    </LinearLayout>
+</LinearLayout>

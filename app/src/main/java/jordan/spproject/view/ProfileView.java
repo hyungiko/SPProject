@@ -9,11 +9,11 @@ import android.view.ViewGroup;
 import jordan.spproject.R;
 
 /**
- * Created by hyungiko on 8/17/18.
+ * Created by hyungiko on 8/31/18.
  */
 
-public class FragmentTwo extends Fragment {
-    public FragmentTwo() {
+public class ProfileView extends Fragment {
+    public ProfileView() {
         // Required empty public constructor
     }
 
@@ -26,6 +26,7 @@ public class FragmentTwo extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_two, container, false);
+        return inflater.inflate(R.layout.profile, container, false);
     }
+
 }

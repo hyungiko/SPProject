@@ -21,6 +21,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -106,21 +107,6 @@ public class FirebaseProcessor {
 
         hopperUpdates.put(preventorId, preventorId);
 
-
-//        for(int i = 0; i < jsonArrayYesterday.length(); i++) {
-//            JSONObject newJsonObjectSegment = jsonArrayYesterday.getJSONObject(i);
-//
-//            String seedTimeWindow = newJsonObjectSegment.getString(GlobalVariable.keyTimeWindow);
-//            hopperUpdates.put(seedTimeWindow,
-//                    new Segment(
-//                            context,
-//                            newJsonObjectSegment,
-//                            newJsonObjectSegment.isNull(GlobalVariable.keyStepCount) ? "0" : newJsonObjectSegment.getString(GlobalVariable.keyStepCount)
-//                    )
-//            );
-//        }
-
-
         databaseReference.updateChildren(hopperUpdates, new DatabaseReference.CompletionListener() {
             @Override
             public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
@@ -202,4 +188,121 @@ public class FirebaseProcessor {
 
         databaseReference.removeValue();
     }
+
+    public void getPreventorList(final Context context) {
+        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
+        final String patientId = account.getEmail().replace('@', '_').replace('.', '_');
+
+        FirebaseDatabase.getInstance().getReference()
+                .child(GlobalVariable.keyPatient)
+                .child(GlobalVariable.keyList)
+                .child(patientId)
+                .child(GlobalVariable.keyPreventor).addListenerForSingleValueEvent(
+                new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        HashSet<String> set = new HashSet<>();
+
+                        for (DataSnapshot singleSnapshot : dataSnapshot.getChildren()) {
+                            String email = singleSnapshot.getKey();
+                            set.add(email);
+                        }
+
+                        getPreventorChattingList(context, set, patientId);
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        Log.w(TAG, "getUser:onCancelled", databaseError.toException());
+                    }
+                }
+        );
+    }
+
+    public void getPreventorChattingList(final Context context, final HashSet<String> set, final String patientId) {
+        FirebaseDatabase.getInstance().getReference()
+                .child(GlobalVariable.keyChatRoom).addListenerForSingleValueEvent(
+                new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        JSONArray jsonArrayHistory = new JSONArray();
+
+                        for (DataSnapshot singleSnapshot : dataSnapshot.getChildren()) {
+                            String email = singleSnapshot.getKey();
+                            if(set.contains(email)) {
+                                Map<String, Object> map = (Map<String, Object>) singleSnapshot.getValue();
+
+                                JSONObject jsonObject = new JSONObject(map);
+                                try {
+                                    jsonArrayHistory.put(new JSONObject().put(email, jsonObject.getJSONObject(patientId)));
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+
+                        Log.e(TAG, "online preventors: "+jsonArrayHistory);
+
+                        // notify main activity
+                        Intent i = new Intent(GlobalVariable.LIST_HISTORY);
+
+                        Bundle mBundle = new Bundle();
+                        mBundle.putString(GlobalVariable.LIST_HISTORY, jsonArrayHistory.toString());
+                        i.putExtra(GlobalVariable.LIST_HISTORY, mBundle);
+                        LocalBroadcastManager manager = LocalBroadcastManager.getInstance(context);
+                        manager.sendBroadcast(i);
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        Log.w(TAG, "getUser:onCancelled", databaseError.toException());
+                    }
+                }
+        );
+    }
+
+    public void getPatientList(final Context context) {
+        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
+        final String preventorId = account.getEmail().replace('@', '_').replace('.', '_');
+
+        FirebaseDatabase.getInstance().getReference()
+                .child(GlobalVariable.keyChatRoom)
+                .child(preventorId).addListenerForSingleValueEvent(
+                new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        JSONArray jsonArrayHistory = new JSONArray();
+
+                        for (DataSnapshot singleSnapshot : dataSnapshot.getChildren()) {
+                            String email = singleSnapshot.getKey();
+                            Map<String, Object> map = (Map<String, Object>) singleSnapshot.getValue();
+
+                            JSONObject jsonObject = new JSONObject(map);
+                            try {
+                                jsonArrayHistory.put(new JSONObject().put(email, jsonObject));
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+                        Log.e(TAG, "online preventors: "+jsonArrayHistory);
+
+                        // notify main activity
+                        Intent i = new Intent(GlobalVariable.LIST_HISTORY);
+
+                        Bundle mBundle = new Bundle();
+                        mBundle.putString(GlobalVariable.LIST_HISTORY, jsonArrayHistory.toString());
+                        i.putExtra(GlobalVariable.LIST_HISTORY, mBundle);
+                        LocalBroadcastManager manager = LocalBroadcastManager.getInstance(context);
+                        manager.sendBroadcast(i);
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        Log.w(TAG, "getUser:onCancelled", databaseError.toException());
+                    }
+                }
+        );
+    }
+
 }

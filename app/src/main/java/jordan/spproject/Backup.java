@@ -41,7 +41,7 @@
 ////import jordan.spproject.process.FirebaseProcessor;
 ////import jordan.spproject.reference.GlobalVariable;
 ////import jordan.spproject.view.FragmentOne;
-////import jordan.spproject.view.FragmentTwo;
+////import jordan.spproject.view.HistoryView;
 ////
 ////
 ////public class MainActivity extends AppCompatActivity {
@@ -472,7 +472,7 @@
 //import jordan.spproject.process.FirebaseProcessor;
 //import jordan.spproject.reference.GlobalVariable;
 //import jordan.spproject.view.FragmentOne;
-//import jordan.spproject.view.FragmentTwo;
+//import jordan.spproject.view.HistoryView;
 //
 //
 //public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -500,7 +500,7 @@
 //        // Add Fragments to adapter one by one
 ////        adapter.addFragment(new FragmentOne(), "FRAG1");
 //        adapter.addFragment(new FragmentOne(), "FRAG2");
-//        adapter.addFragment(new FragmentTwo(), "FRAG2");
+//        adapter.addFragment(new HistoryView(), "FRAG2");
 //
 ////        adapter.addFragment(new FragmentThree(), "FRAG3");
 //        viewPager.setAdapter(adapter);

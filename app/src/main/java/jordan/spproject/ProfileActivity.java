@@ -15,6 +15,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import java.util.HashMap;
 import java.util.Map;
 
+import jordan.spproject.R;
+import jordan.spproject.UserInfo;
 import jordan.spproject.reference.GlobalVariable;
 
 /**
