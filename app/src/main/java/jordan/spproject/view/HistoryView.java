@@ -7,14 +7,11 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
-
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -26,7 +23,7 @@ import java.util.Date;
 import java.util.Iterator;
 
 import jordan.spproject.R;
-import jordan.spproject.helper.DataModel;
+import jordan.spproject.helper.DataModelChatting;
 import jordan.spproject.helper.HistoryAdapter;
 import jordan.spproject.process.FirebaseProcessor;
 import jordan.spproject.reference.GlobalVariable;
@@ -40,7 +37,7 @@ public class HistoryView extends Fragment {
     private BroadcastReceiver broadcastReceiver;
     private String TAG = "HistoryView";
     private ListView listView;
-    private ArrayList<DataModel> dataModels;
+    private ArrayList<DataModelChatting> dataModels;
     private static HistoryAdapter adapter;
     private String userType;
 
@@ -97,7 +94,7 @@ public class HistoryView extends Fragment {
                             else
                                 dateString = prevDate;
 
-                            dataModels.add(new DataModel(email, jsonObject.getString("messageText"), dateString));
+                            dataModels.add(new DataModelChatting(email, jsonObject.getString("messageText"), dateString));
                         }
 
                         adapter.notifyDataSetChanged();
@@ -132,7 +129,7 @@ public class HistoryView extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-//                DataModel dataModel= dataModels.get(position);
+//                DataModelChatting dataModel= dataModels.get(position);
 
             }
         });

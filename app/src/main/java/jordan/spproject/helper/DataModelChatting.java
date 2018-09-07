@@ -4,13 +4,13 @@ package jordan.spproject.helper;
  * Created by hyungiko on 8/31/18.
  */
 
-public class DataModel {
+public class DataModelChatting {
 
     String chattingId;
     String lastContent;
     String lastTime;
 
-    public DataModel(String chattingId, String lastContent, String lastTime) {
+    public DataModelChatting(String chattingId, String lastContent, String lastTime) {
         this.chattingId=chattingId;
         this.lastContent=lastContent;
         this.lastTime=lastTime;

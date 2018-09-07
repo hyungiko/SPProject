@@ -15,4 +15,19 @@
     <string name="preventor_exit">Preventor has left this chatroom. </string>
     <string name="matching_preventor">MATCHING</string>
 
+    <string name="profile">profile</string>
+    <string name="profile_bio">Bio</string>
+    <string name="profile_date_of_birth">Date of Birth</string>
+    <string name="profile_gender">Gender</string>
+    <string name="profile_nationality">Nationality</string>
+    <string name="profile_job">Job</string>
+    <string name="profile_languages">Languages</string>
+    <string name="profile_interests">Interests</string>
+    <string name="profile_hometown">Hometown</string>
+    <string name="profile_current_city">Current City</string>
+    <string name="profile_bio_text">Please introduce yourself</string>
+    <string name="profile_gender_male">Male</string>
+    <string name="profile_gender_female">Female</string>
+
+
 </resources>

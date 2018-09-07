@@ -12,23 +12,21 @@ import java.util.ArrayList;
 import jordan.spproject.R;
 
 /**
- * Created by hyungiko on 8/31/18.
+ * Created by hyungiko on 9/1/18.
  */
 
-public class HistoryAdapter extends ArrayAdapter<DataModelChatting> {
-
-    private ArrayList<DataModelChatting> dataSet;
+public class ProfileAdapter extends ArrayAdapter<DataModelProfile>  {
+    private ArrayList<DataModelProfile> dataSet;
     Context mContext;
 
     // View lookup cache
     private static class ViewHolder {
-        TextView txtChattingId;
-        TextView txtLastContent;
-        TextView txtLastTime;
+        TextView txtProfileFeature;
+        TextView txtProfileContent;
     }
 
-    public HistoryAdapter(ArrayList<DataModelChatting> data, Context context) {
-        super(context, R.layout.row_item_history, data);
+    public ProfileAdapter(ArrayList<DataModelProfile> data, Context context) {
+        super(context, R.layout.row_item_profile, data);
         this.dataSet = data;
         this.mContext=context;
 
@@ -37,7 +35,7 @@ public class HistoryAdapter extends ArrayAdapter<DataModelChatting> {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         // Get the data item for this position
-        DataModelChatting dataModel = getItem(position);
+        DataModelProfile dataModel = getItem(position);
         // Check if an existing view is being reused, otherwise inflate the view
         ViewHolder viewHolder; // view lookup cache stored in tag
 
@@ -45,19 +43,17 @@ public class HistoryAdapter extends ArrayAdapter<DataModelChatting> {
 
             viewHolder = new ViewHolder();
             LayoutInflater inflater = LayoutInflater.from(getContext());
-            convertView = inflater.inflate(R.layout.row_item_history, parent, false);
-            viewHolder.txtChattingId = (TextView) convertView.findViewById(R.id.chatterId);
-            viewHolder.txtLastContent = (TextView) convertView.findViewById(R.id.chattingContent);
-            viewHolder.txtLastTime = (TextView) convertView.findViewById(R.id.chattingTime);
+            convertView = inflater.inflate(R.layout.row_item_profile, parent, false);
+            viewHolder.txtProfileFeature = (TextView) convertView.findViewById(R.id.profile_feature);
+            viewHolder.txtProfileContent = (TextView) convertView.findViewById(R.id.profile_content);
 
             convertView.setTag(viewHolder);
         } else {
             viewHolder = (ViewHolder) convertView.getTag();
         }
 
-        viewHolder.txtChattingId.setText(dataModel.getChattingId());
-        viewHolder.txtLastContent.setText(dataModel.getLastContent());
-        viewHolder.txtLastTime.setText(dataModel.getLastTime());
+        viewHolder.txtProfileFeature.setText(dataModel.getProfileFeature());
+        viewHolder.txtProfileContent.setText(dataModel.getProfileContent());
         // Return the completed view to render on screen
         return convertView;
     }
