@@ -31,6 +31,8 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import jordan.spproject.R;
@@ -47,6 +49,8 @@ public class ProfileView extends Fragment implements View.OnClickListener{
     private ArrayList<DataModelProfile> dataModels;
     private ArrayList<String> nationality = new ArrayList<>();
     private ArrayList<String> language = new ArrayList<>();
+    private JSONArray jsonArrayLanguage;
+    private JSONArray jsonArrayInterest;
 
     private static ProfileAdapter adapter;
     private RadioGroup radioGroupGender;
@@ -54,10 +58,12 @@ public class ProfileView extends Fragment implements View.OnClickListener{
     private View testView;
     private View genderDialogView;
     private View nationalityDialogView;
-    private View languageDialogView;
+//    private View languageDialogView;
+//    private View interestDialogView;
     private AlertDialog nationalityDialog;
 
     public static final String[] MONTHS = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+    public static final String[] INTEREST = {"Community Involvement", "Blogging", "Sports", "Art", "Gaming", "Traveling", "Child Care", "Pet Care", "Music", "Cooking", "Collecting", "Reading"};
 
     public ProfileView() {
         // Required empty public constructor
@@ -130,6 +136,8 @@ public class ProfileView extends Fragment implements View.OnClickListener{
                     showJobDialog();
                 } else if(dataModel.getProfileFeature().equals(getResources().getString(R.string.profile_languages))) {
                     showLanguageDialog();
+                } else if(dataModel.getProfileFeature().equals(getResources().getString(R.string.profile_interests))) {
+                    showInterestDialog();
                 }
              }
         });
@@ -167,8 +175,41 @@ public class ProfileView extends Fragment implements View.OnClickListener{
             dataModels.add(new DataModelProfile(getResources().getString(R.string.profile_gender), jsonObject.getString(getResources().getString(R.string.profile_gender))));
             dataModels.add(new DataModelProfile(getResources().getString(R.string.profile_nationality), jsonObject.getString(getResources().getString(R.string.profile_nationality))));
             dataModels.add(new DataModelProfile(getResources().getString(R.string.profile_job), jsonObject.getString(getResources().getString(R.string.profile_job))));
-            dataModels.add(new DataModelProfile(getResources().getString(R.string.profile_languages), jsonObject.getString(getResources().getString(R.string.profile_languages))));
-            dataModels.add(new DataModelProfile(getResources().getString(R.string.profile_interests), jsonObject.getString(getResources().getString(R.string.profile_interests))));
+
+            if(!jsonObject.getString(getResources().getString(R.string.profile_languages)).equals("")) {
+                String languageList = jsonObject.getString(getResources().getString(R.string.profile_languages));
+                JSONArray jsonArrayLanguage = new JSONArray(languageList);
+                setLanguageDB();
+
+                StringBuilder sb = new StringBuilder();
+                for(int j = 0; j < jsonArrayLanguage.length(); j++) {
+                    sb.append(language.get(jsonArrayLanguage.getInt(j)));
+                    if(j != jsonArrayLanguage.length()-1)
+                        sb.append(", ");
+                }
+
+                dataModels.add(new DataModelProfile(getResources().getString(R.string.profile_languages), sb.toString()));
+            } else {
+                dataModels.add(new DataModelProfile(getResources().getString(R.string.profile_languages), jsonObject.getString(getResources().getString(R.string.profile_languages))));
+            }
+
+
+            if(!jsonObject.getString(getResources().getString(R.string.profile_interests)).equals("")) {
+                String interestList = jsonObject.getString(getResources().getString(R.string.profile_interests));
+                JSONArray jsonArrayInterest = new JSONArray(interestList);
+
+                StringBuilder sb = new StringBuilder();
+                for(int j = 0; j < jsonArrayInterest.length(); j++) {
+                    sb.append(INTEREST[jsonArrayInterest.getInt(j)]);
+                    if(j != jsonArrayInterest.length()-1)
+                        sb.append(", ");
+                }
+
+                dataModels.add(new DataModelProfile(getResources().getString(R.string.profile_interests), sb.toString()));
+            } else {
+                dataModels.add(new DataModelProfile(getResources().getString(R.string.profile_interests), jsonObject.getString(getResources().getString(R.string.profile_interests))));
+            }
+
             dataModels.add(new DataModelProfile(getResources().getString(R.string.profile_hometown), jsonObject.getString(getResources().getString(R.string.profile_hometown))));
             dataModels.add(new DataModelProfile(getResources().getString(R.string.profile_current_city), jsonObject.getString(getResources().getString(R.string.profile_current_city))));
 
@@ -184,7 +225,34 @@ public class ProfileView extends Fragment implements View.OnClickListener{
             JSONObject jsonObject = new JSONObject(GlobalVariable.loadPreferences(getContext(), getResources().getString(R.string.profile)));
             for(int i = 0; i < dataModels.size(); i++) {
                 if(profileFeature.equals(dataModels.get(i).getProfileFeature())) {
-                    dataModels.add(i, new DataModelProfile(profileFeature, jsonObject.getString(profileFeature)));
+                    if(profileFeature.equals(getResources().getString(R.string.profile_languages))) {
+                        String languageList = jsonObject.getString(getResources().getString(R.string.profile_languages));
+                        JSONArray jsonArray = new JSONArray(languageList);
+                        setLanguageDB();
+
+                        StringBuilder sb = new StringBuilder();
+                        for(int j = 0; j < jsonArray.length(); j++) {
+                            sb.append(language.get(jsonArray.getInt(j)));
+                            if(j != jsonArray.length()-1)
+                                sb.append(", ");
+                        }
+
+                        dataModels.add(i, new DataModelProfile(profileFeature, sb.toString()));
+                    } else if(profileFeature.equals(getResources().getString(R.string.profile_interests))) {
+                        String interestList = jsonObject.getString(getResources().getString(R.string.profile_interests));
+                        JSONArray jsonArray = new JSONArray(interestList);
+
+                        StringBuilder sb = new StringBuilder();
+                        for(int j = 0; j < jsonArray.length(); j++) {
+                            sb.append(INTEREST[jsonArray.getInt(j)]);
+                            if(j != jsonArray.length()-1)
+                                sb.append(", ");
+                        }
+
+                        dataModels.add(i, new DataModelProfile(profileFeature, sb.toString()));
+                    } else {
+                        dataModels.add(i, new DataModelProfile(profileFeature, jsonObject.getString(profileFeature)));
+                    }
                     dataModels.remove(i+1);
                 }
             }
@@ -415,6 +483,25 @@ public class ProfileView extends Fragment implements View.OnClickListener{
         b.show();
     }
 
+    public void setLanguageDB() {
+        if(language.size() == 0) {
+            try {
+
+                BufferedReader reader = new BufferedReader( new InputStreamReader(getContext().getAssets().open("language.csv"), "UTF-8"));
+                String line = "";
+                String cvsSplitBy = ",";
+
+                while ((line = reader.readLine()) != null) {
+                    String[] data = line.split(cvsSplitBy);
+                    for(int i = 0; i < data.length; i++)
+                        language.add(data[i]);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     public void showLanguageDialog() {
         if(language.size() == 0) {
             try {
@@ -436,7 +523,6 @@ public class ProfileView extends Fragment implements View.OnClickListener{
         final CharSequence[] dialogList=  language.toArray(new CharSequence[language.size()]);
         boolean[] test = new boolean[language.size()];
 
-
         JSONObject jsonObject = null;
         try {
             jsonObject = new JSONObject(GlobalVariable.loadPreferences(getContext(), getResources().getString(R.string.profile)));
@@ -444,8 +530,20 @@ public class ProfileView extends Fragment implements View.OnClickListener{
                 for(int i = 0; i < test.length; i++) {
                     test[i] = false;
                 }
+                jsonArrayLanguage = new JSONArray();
             } else {
-//                jsonObject.getJSONArray()
+                String test1 = jsonObject.getString(getResources().getString(R.string.profile_languages));
+                jsonArrayLanguage = new JSONArray(test1);
+                Set<Integer> langSet = new HashSet<>();
+                for(int i = 0; i < jsonArrayLanguage.length(); i++)
+                    langSet.add(jsonArrayLanguage.getInt(i));
+
+                for(int i = 0; i < test.length; i++) {
+                    if(langSet.contains(i))
+                        test[i] = true;
+                    else
+                        test[i] = false;
+                }
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -454,15 +552,24 @@ public class ProfileView extends Fragment implements View.OnClickListener{
         final JSONObject finalJsonObject = jsonObject;
 
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getContext());
-        dialogBuilder.setView(languageDialogView);
-
-
-        final JSONArray jsonArray = new JSONArray();
+//        dialogBuilder.setView(languageDialogView);
         dialogBuilder.setMultiChoiceItems(dialogList, test, new DialogInterface.OnMultiChoiceClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which, boolean isChecked) {
-                jsonArray.put(which);
-                Log.e("TEST", "which: "+jsonArray);
+                if(isChecked) {
+                    jsonArrayLanguage.put(which);
+                } else {
+                    for(int i = 0; i < jsonArrayLanguage.length(); i++) {
+                        try {
+                            if(jsonArrayLanguage.getInt(i) == which) {
+                                jsonArrayLanguage.remove(i);
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                Log.e("TEST", "which: "+jsonArrayLanguage);
 
             }
         });
@@ -471,8 +578,90 @@ public class ProfileView extends Fragment implements View.OnClickListener{
         dialogBuilder.setPositiveButton("Done", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 //do something with edt.getText().toString();
+                try {
+                    finalJsonObject.put(getResources().getString(R.string.profile_languages), jsonArrayLanguage.toString());
+                    GlobalVariable.saveStringPreferences(getContext(), getResources().getString(R.string.profile), finalJsonObject.toString());
+                    resetListView(getResources().getString(R.string.profile_languages));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
 
-//                GlobalVariable.saveStringPreferences(this,);
+            }
+        });
+        dialogBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                //pass
+            }
+        });
+
+        AlertDialog nationalityDialog = dialogBuilder.create();
+        nationalityDialog.show();
+    }
+
+    public void showInterestDialog() {
+        boolean[] test = new boolean[INTEREST.length];
+
+        JSONObject jsonObject = null;
+        try {
+            jsonObject = new JSONObject(GlobalVariable.loadPreferences(getContext(), getResources().getString(R.string.profile)));
+            if(jsonObject.getString(getResources().getString(R.string.profile_interests)).equals("")) {
+                for(int i = 0; i < test.length; i++) {
+                    test[i] = false;
+                }
+                jsonArrayInterest = new JSONArray();
+            } else {
+                String test1 = jsonObject.getString(getResources().getString(R.string.profile_interests));
+                jsonArrayInterest = new JSONArray(test1);
+                Set<Integer> langSet = new HashSet<>();
+                for(int i = 0; i < jsonArrayInterest.length(); i++)
+                    langSet.add(jsonArrayInterest.getInt(i));
+
+                for(int i = 0; i < test.length; i++) {
+                    if(langSet.contains(i))
+                        test[i] = true;
+                    else
+                        test[i] = false;
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        final JSONObject finalJsonObject = jsonObject;
+
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getContext());
+        dialogBuilder.setMultiChoiceItems(INTEREST, test, new DialogInterface.OnMultiChoiceClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+                if(isChecked) {
+                    jsonArrayInterest.put(which);
+                } else {
+                    for(int i = 0; i < jsonArrayInterest.length(); i++) {
+                        try {
+                            if(jsonArrayInterest.getInt(i) == which) {
+                                jsonArrayInterest.remove(i);
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                Log.e("TEST", "which: "+jsonArrayInterest);
+
+            }
+        });
+
+        dialogBuilder.setTitle(getResources().getString(R.string.profile_interests));
+        dialogBuilder.setPositiveButton("Done", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                //do something with edt.getText().toString();
+                try {
+                    finalJsonObject.put(getResources().getString(R.string.profile_interests), jsonArrayInterest.toString());
+                    GlobalVariable.saveStringPreferences(getContext(), getResources().getString(R.string.profile), finalJsonObject.toString());
+                    resetListView(getResources().getString(R.string.profile_interests));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
 
             }
         });
