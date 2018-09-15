@@ -2,6 +2,7 @@ package jordan.spproject.view;
 
 import android.app.DatePickerDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -22,6 +23,10 @@ import android.widget.TextView;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.GooglePlayServicesRepairableException;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
@@ -45,6 +50,7 @@ import jordan.spproject.reference.GlobalVariable;
  */
 
 public class ProfileView extends Fragment implements View.OnClickListener{
+    private String TAG = "ProfileView";
     private ListView listView;
     private ArrayList<DataModelProfile> dataModels;
     private ArrayList<String> nationality = new ArrayList<>();
@@ -58,12 +64,59 @@ public class ProfileView extends Fragment implements View.OnClickListener{
     private View testView;
     private View genderDialogView;
     private View nationalityDialogView;
-//    private View languageDialogView;
-//    private View interestDialogView;
     private AlertDialog nationalityDialog;
 
+    private int REQUEST_CODE_AUTOCOMPLETE_HOMETOWN = 1000;
+    private int REQUEST_CODE_AUTOCOMPLETE_CUR_CITY = 1001;
+
     public static final String[] MONTHS = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
-    public static final String[] INTEREST = {"Community Involvement", "Blogging", "Sports", "Art", "Gaming", "Traveling", "Child Care", "Pet Care", "Music", "Cooking", "Collecting", "Reading"};
+    public static final String[] INTEREST = {"Community Involvement", "Blogging", "Sports", "Art", "Gaming", "Traveling", "Child Care", "Pet Care", "Music", "Cooking", "Collecting", "Reading", "Photography"};
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        JSONObject jsonObject = null;
+        try {
+            jsonObject = new JSONObject(GlobalVariable.loadPreferences(getContext(), getResources().getString(R.string.profile)));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        if (requestCode == REQUEST_CODE_AUTOCOMPLETE_HOMETOWN) {
+            Place place = PlaceAutocomplete.getPlace(getContext(), data);
+            Log.i(TAG, "Place: " + place.getName() +", "+place.getLatLng().latitude+", "+place.getLatLng().longitude+", "+place.getAddress());
+
+            JSONObject jsonObjectHometown = new JSONObject();
+            try {
+                jsonObjectHometown.put(getResources().getString(R.string.profile_address), place.getAddress());
+                jsonObjectHometown.put(getResources().getString(R.string.profile_lat), place.getLatLng().latitude);
+                jsonObjectHometown.put(getResources().getString(R.string.profile_lng), place.getLatLng().longitude);
+
+                jsonObject.put(getResources().getString(R.string.profile_hometown), jsonObjectHometown.toString());
+                GlobalVariable.saveStringPreferences(getContext(), getResources().getString(R.string.profile), jsonObject.toString());
+
+                resetListView(getResources().getString(R.string.profile_hometown));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        } else if(requestCode == REQUEST_CODE_AUTOCOMPLETE_CUR_CITY) {
+            Place place = PlaceAutocomplete.getPlace(getContext(), data);
+            Log.i(TAG, "Place: " + place.getName() +", "+place.getLatLng().latitude+", "+place.getLatLng().longitude+", "+place.getAddress());
+
+            JSONObject jsonObjectCurCity = new JSONObject();
+            try {
+                jsonObjectCurCity.put(getResources().getString(R.string.profile_address), place.getAddress());
+                jsonObjectCurCity.put(getResources().getString(R.string.profile_lat), place.getLatLng().latitude);
+                jsonObjectCurCity.put(getResources().getString(R.string.profile_lng), place.getLatLng().longitude);
+
+                jsonObject.put(getResources().getString(R.string.profile_current_city), jsonObjectCurCity.toString());
+                GlobalVariable.saveStringPreferences(getContext(), getResources().getString(R.string.profile), jsonObject.toString());
+
+                resetListView(getResources().getString(R.string.profile_current_city));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     public ProfileView() {
         // Required empty public constructor
@@ -72,7 +125,6 @@ public class ProfileView extends Fragment implements View.OnClickListener{
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
     }
 
     @Override
@@ -138,6 +190,28 @@ public class ProfileView extends Fragment implements View.OnClickListener{
                     showLanguageDialog();
                 } else if(dataModel.getProfileFeature().equals(getResources().getString(R.string.profile_interests))) {
                     showInterestDialog();
+                } else if(dataModel.getProfileFeature().equals(getResources().getString(R.string.profile_hometown))) {
+                    Intent intent = null;
+                    try {
+                        intent = new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_OVERLAY)
+                                .build(getActivity());
+                        startActivityForResult(intent, REQUEST_CODE_AUTOCOMPLETE_HOMETOWN);
+                    } catch (GooglePlayServicesRepairableException e) {
+                        e.printStackTrace();
+                    } catch (GooglePlayServicesNotAvailableException e) {
+                        e.printStackTrace();
+                    }
+                } else if(dataModel.getProfileFeature().equals(getResources().getString(R.string.profile_current_city))) {
+                    Intent intent = null;
+                    try {
+                        intent = new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_OVERLAY)
+                                .build(getActivity());
+                        startActivityForResult(intent, REQUEST_CODE_AUTOCOMPLETE_CUR_CITY);
+                    } catch (GooglePlayServicesRepairableException e) {
+                        e.printStackTrace();
+                    } catch (GooglePlayServicesNotAvailableException e) {
+                        e.printStackTrace();
+                    }
                 }
              }
         });
@@ -154,8 +228,8 @@ public class ProfileView extends Fragment implements View.OnClickListener{
                 jsonObject.put(getResources().getString(R.string.profile_job), "");
                 jsonObject.put(getResources().getString(R.string.profile_languages), "");
                 jsonObject.put(getResources().getString(R.string.profile_interests), "");
-                jsonObject.put(getResources().getString(R.string.profile_hometown), "");
-                jsonObject.put(getResources().getString(R.string.profile_current_city), "");
+                jsonObject.put(getResources().getString(R.string.profile_hometown), (new JSONObject()).toString());
+                jsonObject.put(getResources().getString(R.string.profile_current_city), (new JSONObject()).toString());
 
                 GlobalVariable.saveStringPreferences(getContext(), getResources().getString(R.string.profile), jsonObject.toString());
             } catch (JSONException e) {
@@ -210,8 +284,25 @@ public class ProfileView extends Fragment implements View.OnClickListener{
                 dataModels.add(new DataModelProfile(getResources().getString(R.string.profile_interests), jsonObject.getString(getResources().getString(R.string.profile_interests))));
             }
 
-            dataModels.add(new DataModelProfile(getResources().getString(R.string.profile_hometown), jsonObject.getString(getResources().getString(R.string.profile_hometown))));
-            dataModels.add(new DataModelProfile(getResources().getString(R.string.profile_current_city), jsonObject.getString(getResources().getString(R.string.profile_current_city))));
+            if((new JSONObject(jsonObject.getString(getResources().getString(R.string.profile_hometown)))).length() == 0)
+                dataModels.add(new DataModelProfile(getResources().getString(R.string.profile_hometown), ""));
+            else {
+                String hometown = jsonObject.getString(getResources().getString(R.string.profile_hometown));
+                JSONObject jsonObject1 = new JSONObject(hometown);
+                String address = jsonObject1.getString(getResources().getString(R.string.profile_address));
+                dataModels.add(new DataModelProfile(getResources().getString(R.string.profile_hometown), address));
+            }
+
+            if((new JSONObject(jsonObject.getString(getResources().getString(R.string.profile_current_city)))).length() == 0)
+                dataModels.add(new DataModelProfile(getResources().getString(R.string.profile_current_city), ""));
+            else {
+                String hometown = jsonObject.getString(getResources().getString(R.string.profile_current_city));
+                JSONObject jsonObject1 = new JSONObject(hometown);
+                String address = jsonObject1.getString(getResources().getString(R.string.profile_address));
+                dataModels.add(new DataModelProfile(getResources().getString(R.string.profile_current_city), address));
+            }
+
+//            dataModels.add(new DataModelProfile(getResources().getString(R.string.profile_current_city), jsonObject.getString(getResources().getString(R.string.profile_current_city))));
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -250,6 +341,16 @@ public class ProfileView extends Fragment implements View.OnClickListener{
                         }
 
                         dataModels.add(i, new DataModelProfile(profileFeature, sb.toString()));
+                    } else if(profileFeature.equals(getResources().getString(R.string.profile_hometown))) {
+                        String hometown = jsonObject.getString(profileFeature);
+                        JSONObject jsonObject1 = new JSONObject(hometown);
+                        String address = jsonObject1.getString(getResources().getString(R.string.profile_address));
+                        dataModels.add(i, new DataModelProfile(profileFeature, address));
+                    } else if(profileFeature.equals(getResources().getString(R.string.profile_current_city))) {
+                        String hometown = jsonObject.getString(profileFeature);
+                        JSONObject jsonObject1 = new JSONObject(hometown);
+                        String address = jsonObject1.getString(getResources().getString(R.string.profile_address));
+                        dataModels.add(i, new DataModelProfile(profileFeature, address));
                     } else {
                         dataModels.add(i, new DataModelProfile(profileFeature, jsonObject.getString(profileFeature)));
                     }

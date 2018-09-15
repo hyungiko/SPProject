@@ -25,7 +25,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import javax.microedition.khronos.opengles.GL;
+
 import jordan.spproject.ChatMessage;
+import jordan.spproject.Dataformat.RateInfo;
 import jordan.spproject.reference.GlobalVariable;
 
 /**
@@ -52,7 +55,7 @@ public class FirebaseProcessor {
                                     jsonArrayPreventor.put(email);
                                 }
 
-                                Log.e(TAG, "online preventors: "+jsonArrayPreventor);
+//                                Log.e(TAG, "online preventors: "+jsonArrayPreventor);
 
                                 // notify main activity
                                 Intent i = new Intent(GlobalVariable.ONLINE_PREVENTOR_UPDATE);
@@ -114,6 +117,112 @@ public class FirebaseProcessor {
                     Log.e(TAG, "Preventor List could not be saved " + databaseError.getMessage());
                 } else {
                     Log.e(TAG, "Preventor List saved successfully.");
+                }
+            }
+        });
+    }
+
+    public void getPreventorRate(final Context context, String preventorId) {
+        FirebaseDatabase.getInstance().getReference()
+                .child(GlobalVariable.keyPreventor)
+                .child(GlobalVariable.keyList)
+                .child(preventorId).addListenerForSingleValueEvent(
+                new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        String rate = "0";
+                        String count = "0";
+                        String email = "";
+                        String name = "";
+
+                        JSONObject jsonObject = new JSONObject();
+                        for (DataSnapshot singleSnapshot : dataSnapshot.getChildren()) {
+                            String key = singleSnapshot.getKey();
+                            String value = singleSnapshot.getValue().toString();
+                            if(key.equals("rate")) {
+                                try {
+                                    jsonObject.put("rate", value);
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                            } else if(key.equals("count")) {
+                                try {
+                                    jsonObject.put("count", value);
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                            } else if(key.equals("email")) {
+                                try {
+                                    jsonObject.put("email", email);
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                            } else if(key.equals("name")) {
+                                try {
+                                    jsonObject.put("name", name);
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+
+                        // notify main activity
+                        Intent i = new Intent(GlobalVariable.RATE_UPDATE);
+
+                        Bundle mBundle = new Bundle();
+                        mBundle.putString(GlobalVariable.LIST_RATE, jsonObject.toString());
+                        i.putExtra(GlobalVariable.LIST_RATE, mBundle);
+                        LocalBroadcastManager manager = LocalBroadcastManager.getInstance(context);
+                        manager.sendBroadcast(i);
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        Log.w(TAG, "getUser:onCancelled", databaseError.toException());
+                    }
+                }
+        );
+    }
+
+    public void updatePreventorRate(String preventorId, JSONObject jsonObject, double newRate) {
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference()
+                .child(GlobalVariable.keyPreventor)
+                .child(GlobalVariable.keyList);
+
+        Map<String, Object> hopperUpdates = new HashMap<>();
+
+        double rate = 0;
+        double count = 0;
+
+        if(!jsonObject.isNull("rate")) {
+            try {
+                rate = jsonObject.getDouble("rate");
+                count = jsonObject.getDouble("count");
+
+                rate = rate*count;
+                count = count + 1;
+                rate = (rate + newRate) / count;
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        } else {
+            rate = newRate;
+            count = 1;
+        }
+
+        try {
+            hopperUpdates.put(preventorId, new RateInfo(jsonObject.getString("email"), jsonObject.getString("name"), rate, count));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        databaseReference.updateChildren(hopperUpdates, new DatabaseReference.CompletionListener() {
+            @Override
+            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                if (databaseError != null) {
+                    Log.e(TAG, "updatePreventorRate could not be saved " + databaseError.getMessage());
+                } else {
+                    Log.e(TAG, "updatePreventorRate saved successfully.");
                 }
             }
         });
@@ -241,7 +350,7 @@ public class FirebaseProcessor {
                             }
                         }
 
-                        Log.e(TAG, "online preventors: "+jsonArrayHistory);
+//                        Log.e(TAG, "online preventors: "+jsonArrayHistory);
 
                         // notify main activity
                         Intent i = new Intent(GlobalVariable.LIST_HISTORY);
@@ -285,7 +394,7 @@ public class FirebaseProcessor {
                             }
                         }
 
-                        Log.e(TAG, "online preventors: "+jsonArrayHistory);
+//                        Log.e(TAG, "online preventors: "+jsonArrayHistory);
 
                         // notify main activity
                         Intent i = new Intent(GlobalVariable.LIST_HISTORY);
@@ -293,6 +402,44 @@ public class FirebaseProcessor {
                         Bundle mBundle = new Bundle();
                         mBundle.putString(GlobalVariable.LIST_HISTORY, jsonArrayHistory.toString());
                         i.putExtra(GlobalVariable.LIST_HISTORY, mBundle);
+                        LocalBroadcastManager manager = LocalBroadcastManager.getInstance(context);
+                        manager.sendBroadcast(i);
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        Log.w(TAG, "getUser:onCancelled", databaseError.toException());
+                    }
+                }
+        );
+    }
+
+    public void getPatientSurvey(final Context context, String patientId) {
+        FirebaseDatabase.getInstance().getReference()
+                .child(GlobalVariable.keyPatient)
+                .child(GlobalVariable.keyList)
+                .child(patientId)
+                .child(GlobalVariable.keySurvey)
+                .addListenerForSingleValueEvent(
+                new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        JSONObject jsonObjectSurvey = new JSONObject();
+
+                        for (DataSnapshot singleSnapshot : dataSnapshot.getChildren()) {
+                            String date = singleSnapshot.getKey();
+                            if(date.equals(GlobalVariable.getDate())) {
+                                Map<String, Object> map = (Map<String, Object>) singleSnapshot.getValue();
+                                jsonObjectSurvey = new JSONObject(map);
+                            }
+                        }
+
+                        // notify main activity
+                        Intent i = new Intent(GlobalVariable.LIST_SURVEY);
+
+                        Bundle mBundle = new Bundle();
+                        mBundle.putString(GlobalVariable.LIST_SURVEY, jsonObjectSurvey.toString());
+                        i.putExtra(GlobalVariable.LIST_SURVEY, mBundle);
                         LocalBroadcastManager manager = LocalBroadcastManager.getInstance(context);
                         manager.sendBroadcast(i);
                     }

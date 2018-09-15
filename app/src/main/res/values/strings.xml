@@ -14,6 +14,7 @@
     <string name="patient_exit">Patient has left this chatroom. </string>
     <string name="preventor_exit">Preventor has left this chatroom. </string>
     <string name="matching_preventor">MATCHING</string>
+    <string name="survey">SURVEY</string>
 
     <string name="profile">profile</string>
     <string name="profile_bio">Bio</string>
@@ -28,6 +29,13 @@
     <string name="profile_bio_text">Please introduce yourself</string>
     <string name="profile_gender_male">Male</string>
     <string name="profile_gender_female">Female</string>
-
+    <string name="profile_address">address</string>
+    <string name="profile_lat">lat</string>
+    <string name="profile_lng">lng</string>
+    <string name="sleep">sleep</string>
+    <string name="mood">mood</string>
+    <string name="rating">Rating</string>
+    <string name="rate">rate</string>
+    <string name="rating_desc">Please give a score for the preventor. \n</string>
 
 </resources>

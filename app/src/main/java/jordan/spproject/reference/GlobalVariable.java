@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import java.util.Calendar;
+
 /**
  * Created by hyungiko on 8/8/18.
  */
@@ -11,8 +13,15 @@ import android.content.SharedPreferences;
 public class GlobalVariable {
     static public final String sharedName	= "SP Project";
     static public final String ONLINE_PREVENTOR_UPDATE 	= "preventorUpdate";
+    static public final String EMOJI_UPDATE 	= "emojiUpdate";
+    static public final String SLEEP_UPDATE 	= "sleepUpdate";
+    static public final String RATE_UPDATE 	= "rateUpdate";
     static public final String LIST_PREVENTOR = "listPreventor";
     static public final String LIST_HISTORY = "listPreventor";
+    static public final String LIST_RATE = "listRate";
+    static public final String LIST_SURVEY = "listSurvey";
+    static public final String EMOJI_MSG = "emoji_msg";
+    static public final String SLEEP_MSG = "sleep_msg";
     static public final String GREETING_MSG = "Hi, how are you?";
     static public final String START_MSG = "@@start";
     static public final String REJECT_MSG = "@@reject";
@@ -27,6 +36,7 @@ public class GlobalVariable {
     public static String keyOnline = "online";
     public static String keyTrue = "true";
     public static String keyFalse = "false";
+    public static String keySurvey = "survey";
 
     public static String keyEmailId = "emailId";
     public static String keyPreventor = "preventor";
@@ -57,5 +67,15 @@ public class GlobalVariable {
         SharedPreferences.Editor editor = mySharedPreferences.edit();
         editor.remove(key);
         editor.commit();
+    }
+
+    public static String getDate() {
+        Calendar c  = Calendar.getInstance();
+        int year	= c.get(Calendar.YEAR);
+        int month 	= c.get(Calendar.MONTH)+1;
+        int day		= c.get(Calendar.DAY_OF_MONTH);
+
+        String timeWindow = String.format("%02d%02d_%02d", month, day, year);
+        return timeWindow;
     }
 }

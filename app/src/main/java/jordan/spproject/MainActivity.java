@@ -59,7 +59,8 @@ public class MainActivity extends AppCompatActivity{
     private void updateUI(@Nullable GoogleSignInAccount account) {
         if (account != null) {
             // signed-in
-            if(GlobalVariable.isJustSignedUp) {
+            if(GlobalVariable.isJustSignedUp&&
+                    viewPager == null) {
                 Intent intent = new Intent(this, ProfileActivity.class);
                 startActivity(intent);
                 this.overridePendingTransition(0, 0);

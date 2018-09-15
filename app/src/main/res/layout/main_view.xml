@@ -76,5 +76,22 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/matching_preventor"/>
+        <Button
+            android:id="@+id/btn_survey"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:text="@string/survey"/>
+    </RelativeLayout>
+    <RelativeLayout
+        android:id="@+id/view_survey"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#000000"
+        android:visibility="invisible">
+        <android.support.v4.view.ViewPager
+            android:id="@+id/surveyView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
     </RelativeLayout>
 </RelativeLayout>

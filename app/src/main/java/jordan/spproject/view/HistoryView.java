@@ -2,16 +2,22 @@ package jordan.spproject.view;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -40,6 +46,7 @@ public class HistoryView extends Fragment {
     private ArrayList<DataModelChatting> dataModels;
     private static HistoryAdapter adapter;
     private String userType;
+    private android.support.v7.app.AlertDialog surveyDialog;
 
     public HistoryView() {
         // Required empty public constructor
@@ -49,7 +56,6 @@ public class HistoryView extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        initiate();
     }
 
     @Override
@@ -58,6 +64,7 @@ public class HistoryView extends Fragment {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.history_view, container, false);
         initView(rootView);
+        initiate();
         return rootView;
     }
 
@@ -94,10 +101,19 @@ public class HistoryView extends Fragment {
                             else
                                 dateString = prevDate;
 
-                            dataModels.add(new DataModelChatting(email, jsonObject.getString("messageText"), dateString));
+                            if(dataModels.size() < preventorList.length())
+                                dataModels.add(new DataModelChatting(email, jsonObject.getString("messageText"), dateString));
                         }
 
                         adapter.notifyDataSetChanged();
+                    } else if(intent.getAction().equals(GlobalVariable.LIST_SURVEY)) {
+                        Object tmp = intent.getParcelableExtra(GlobalVariable.LIST_SURVEY);
+                        Bundle bndl = (Bundle) tmp;
+
+                        JSONObject jsonObjectSurvey = new JSONObject(bndl.getString(GlobalVariable.LIST_SURVEY));
+                        showSurveyDialog(jsonObjectSurvey);
+
+                        Log.e(TAG, "jsonObjectSurvey: "+jsonObjectSurvey);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -106,7 +122,10 @@ public class HistoryView extends Fragment {
         };
 
         bManager = LocalBroadcastManager.getInstance(getActivity());
-        bManager.registerReceiver(broadcastReceiver, new IntentFilter(GlobalVariable.LIST_HISTORY));
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(GlobalVariable.LIST_HISTORY);
+        intentFilter.addAction(GlobalVariable.LIST_SURVEY);
+        bManager.registerReceiver(broadcastReceiver, intentFilter);
 
         userType = GlobalVariable.loadPreferences(getContext(), GlobalVariable.keyUserType);
         if(userType != null && userType.equals(GlobalVariable.keyPreventor)) {
@@ -128,11 +147,30 @@ public class HistoryView extends Fragment {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
+//
 //                DataModelChatting dataModel= dataModels.get(position);
-
+//                Log.e(TAG, "dataModel: "+dataModel.getChattingId());
             }
         });
+
+        userType = GlobalVariable.loadPreferences(getContext(), GlobalVariable.keyUserType);
+        if(userType != null && userType.equals(GlobalVariable.keyPreventor)) {
+            listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+                @Override
+                public boolean onItemLongClick(AdapterView<?> parent, View view,
+                                               int position, long id) {
+                    // TODO Auto-generated method stub
+                    DataModelChatting dataModel= dataModels.get(position);
+                    String patientId = dataModel.getChattingId().substring(0, dataModel.getChattingId().indexOf(' ')).trim();
+                    patientId = patientId.replace('@', '_').replace('.', '_');
+
+                    Log.e(TAG, "patientId: "+patientId);
+
+                    (new FirebaseProcessor()).getPatientSurvey(getContext(), patientId);
+                    return true;
+                }
+            });
+        }
     }
 
     private JSONObject getLastObject(JSONObject jsonObject) {
@@ -162,5 +200,31 @@ public class HistoryView extends Fragment {
         }
 
         return jsonObjectLastItem;
+    }
+
+    public void showSurveyDialog(JSONObject jsonObject) {
+        surveyDialog = null;
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getContext());
+
+        String message = "";
+        try {
+            if (jsonObject.isNull(getResources().getString(R.string.mood)))
+                message = "There is no survey, today.";
+            else
+                message = "MOOD: "+jsonObject.getString(getResources().getString(R.string.mood))+", SLEEP: "+jsonObject.getString(getResources().getString(R.string.sleep));
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        dialogBuilder.setTitle(getResources().getString(R.string.survey));
+        dialogBuilder.setMessage(message);
+        dialogBuilder.setPositiveButton("Done", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                //do something with edt.getText().toString();
+            }
+        });
+
+        surveyDialog = dialogBuilder.create();
+        surveyDialog.show();
     }
 }

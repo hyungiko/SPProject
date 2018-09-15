@@ -30,7 +30,7 @@ public class ProfileActivity extends Activity implements View.OnClickListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        setContentView(R.layout.profile);
+        setContentView(R.layout.activity_profile);
 
         initiate();
     }

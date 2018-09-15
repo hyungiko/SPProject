@@ -18,6 +18,7 @@ import android.os.StrictMode;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.view.ViewPager;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -26,8 +27,11 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.firebase.ui.database.FirebaseListAdapter;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -37,11 +41,19 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import jordan.spproject.ChatMessage;
+import jordan.spproject.Dataformat.SurveyInfo;
 import jordan.spproject.ProfileActivity;
 import jordan.spproject.R;
 import jordan.spproject.SignIn;
+import jordan.spproject.UserInfo;
+import jordan.spproject.helper.SectionsPagerAdapter;
 import jordan.spproject.process.FirebaseProcessor;
 import jordan.spproject.reference.GlobalVariable;
 
@@ -57,7 +69,7 @@ public class MainView extends Fragment implements View.OnClickListener{
     private FloatingActionButton fab;
     private ListView listOfMessages;
     private TextView tvPreventorStatus;
-    private Button btnOnOff, btnCheckOnline;
+    private Button btnOnOff, btnCheckOnline, btnSurvey;
     private Handler handler;
     private EditText input;
     private AlertDialog mAlertDialog;
@@ -65,6 +77,17 @@ public class MainView extends Fragment implements View.OnClickListener{
     private String gPatientId;
     private ProgressDialog progressDialog;
     private RelativeLayout chattingLatout;
+    private RelativeLayout surveyLayout;
+    private int emojiId = -1;
+    private int sleepId = -1;
+    private View ratingDialogView;
+    private RadioGroup radioGroupRating;
+    private int index1 = 0;
+
+    ViewPager viewPager;
+    SectionsPagerAdapter sectionsPagerAdapter;
+    android.support.v7.app.AlertDialog completeDialog;
+    android.support.v7.app.AlertDialog ratingDialog;
 
     public MainView() {
         // Required empty public constructor
@@ -86,7 +109,7 @@ public class MainView extends Fragment implements View.OnClickListener{
 
         View rootView = inflater.inflate(R.layout.main_view, container, false);
         initiate(rootView);
-
+        initViewPager(rootView);
         return rootView;
     }
 
@@ -97,6 +120,7 @@ public class MainView extends Fragment implements View.OnClickListener{
         listOfMessages = (ListView)view.findViewById(R.id.list_of_messages);
         tvPreventorStatus = (TextView) view.findViewById(R.id.preventorStatus);
         chattingLatout = (RelativeLayout) view.findViewById(R.id.chattingLayout);
+        surveyLayout = (RelativeLayout) view.findViewById(R.id.view_survey);
 
         input = (EditText)view.findViewById(R.id.input);
         progressDialog = new ProgressDialog(getContext());
@@ -108,6 +132,20 @@ public class MainView extends Fragment implements View.OnClickListener{
         } else if(userType != null && userType.equals(GlobalVariable.keyPatient)) {
             loadPatientView(view);
         }
+
+        LayoutInflater inflater = this.getLayoutInflater();
+        ratingDialogView= inflater.inflate(R.layout.rating_dialog, null);
+
+        radioGroupRating = (RadioGroup) ratingDialogView.findViewById(R.id.radioGroupRating);
+        radioGroupRating.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup radioGroup, int i) {
+                View radioButton = radioGroup.findViewById(i);
+                index1 = radioGroup.indexOfChild(radioButton);
+                Log.e("TAG", "index1: "+index1);
+            }
+        });
+
 
         broadcastReceiver = new BroadcastReceiver() {
             @Override
@@ -128,6 +166,26 @@ public class MainView extends Fragment implements View.OnClickListener{
                             }
                         } else
                             initChattingViewForPatient(preventorList.getString(0));
+                    } else if(intent.getAction().equals(GlobalVariable.EMOJI_UPDATE)) {
+                        Object tmp = intent.getParcelableExtra(GlobalVariable.EMOJI_MSG);
+                        Bundle bndl = (Bundle) tmp;
+                        emojiId = bndl.getInt(GlobalVariable.EMOJI_MSG);
+                        viewPager.setCurrentItem(1);
+                    } else if(intent.getAction().equals(GlobalVariable.SLEEP_UPDATE)) {
+                        Object tmp = intent.getParcelableExtra(GlobalVariable.SLEEP_MSG);
+                        Bundle bndl = (Bundle) tmp;
+                        sleepId = bndl.getInt(GlobalVariable.SLEEP_MSG);
+
+                        // generate noti
+                        showCompletelDialog();
+                    } else if(intent.getAction().equals(GlobalVariable.RATE_UPDATE)) {
+                        Object tmp = intent.getParcelableExtra(GlobalVariable.LIST_RATE);
+                        Bundle bndl = (Bundle) tmp;
+                        String rate = bndl.getString(GlobalVariable.LIST_RATE);
+                        JSONObject jsonObject = new JSONObject(rate);
+                        Log.e(TAG, "jsonObject: "+jsonObject);
+
+                        (new FirebaseProcessor()).updatePreventorRate(gPreventorId, jsonObject, index1);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -136,7 +194,12 @@ public class MainView extends Fragment implements View.OnClickListener{
         };
 
         bManager = LocalBroadcastManager.getInstance(getActivity());
-        bManager.registerReceiver(broadcastReceiver, new IntentFilter(GlobalVariable.ONLINE_PREVENTOR_UPDATE));
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(GlobalVariable.ONLINE_PREVENTOR_UPDATE);
+        intentFilter.addAction(GlobalVariable.EMOJI_UPDATE);
+        intentFilter.addAction(GlobalVariable.SLEEP_UPDATE);
+        intentFilter.addAction(GlobalVariable.RATE_UPDATE);
+        bManager.registerReceiver(broadcastReceiver, intentFilter);
 
         handler = new Handler(){
             @Override
@@ -164,6 +227,7 @@ public class MainView extends Fragment implements View.OnClickListener{
                 } else if(msg.what == 6000) {
                     adapter = null;
                     listOfMessages.setAdapter(adapter);
+                    showRatingDialog();
                 }
             }
         };
@@ -193,10 +257,29 @@ public class MainView extends Fragment implements View.OnClickListener{
     private void loadPatientView(View view) {
         btnCheckOnline = (Button) view.findViewById(R.id.btn_chkOnline);
         btnCheckOnline.setOnClickListener(this);
+        btnSurvey = (Button) view.findViewById(R.id.btn_survey);
+        btnSurvey.setOnClickListener(this);
 
         hidePatientLayout(false, view);
         hideChatting(true);
         hidePreventorLayout(true, view);
+
+        hideSurveyButton();
+    }
+
+    private void hideSurveyButton() {
+        String survey = GlobalVariable.loadPreferences(getContext(), GlobalVariable.keySurvey);
+        if(survey != null) {
+            try {
+                JSONObject jsonObject = new JSONObject(survey);
+                if(jsonObject.isNull(GlobalVariable.getDate()))
+                    btnSurvey.setVisibility(View.VISIBLE);
+                else
+                    btnSurvey.setVisibility(View.INVISIBLE);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private void setOnline(View view) {
@@ -441,7 +524,6 @@ public class MainView extends Fragment implements View.OnClickListener{
                         (new FirebaseProcessor()).removeDummyChatRoom(preventorId);
                         makeDialogForChattingRequest(preventorId, model.getEmail());
                     }
-                    Log.e(TAG, "initChattingViewForPreventor: "+model.getMessageText());
                 } catch (NullPointerException e) {
                     e.printStackTrace();
                 }
@@ -618,8 +700,118 @@ public class MainView extends Fragment implements View.OnClickListener{
                     adapter = null;
                     listOfMessages.setAdapter(adapter);
                     btnCheckOnline.setText(getResources().getString(R.string.matching_preventor));
+
+                    showRatingDialog();
                 }
                 break;
+            case R.id.btn_survey:
+                surveyLayout.setVisibility(View.VISIBLE);
+                break;
         }
+    }
+
+    private void initViewPager(View view) {
+        sectionsPagerAdapter = new SectionsPagerAdapter(getFragmentManager());
+        // Set up the ViewPager with the sections adapter.
+        viewPager = (ViewPager) view.findViewById(R.id.surveyView);
+        viewPager.setAdapter(sectionsPagerAdapter);
+
+        viewPager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+
+            // optional
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            // optional
+            @Override
+            public void onPageSelected(int position) {
+                Log.e("TAG", "addOnPageChangeListener onPageSelected: " + position);
+            }
+
+            // optional
+            @Override
+            public void onPageScrollStateChanged(int state) {
+            }
+        });
+
+        sectionsPagerAdapter.setCount(2);
+    }
+
+    public void showCompletelDialog() {
+        android.support.v7.app.AlertDialog.Builder dialogBuilder = new android.support.v7.app.AlertDialog.Builder(getContext());
+
+        dialogBuilder.setTitle("SURVEY COMPLETE");
+        dialogBuilder.setMessage("Your daily survey is complete.");
+        dialogBuilder.setPositiveButton("Done", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                //do something with edt.getText().toString();
+                surveyLayout.setVisibility(View.INVISIBLE);
+                Log.e(TAG, "showCompletelDialog: "+emojiId+", "+sleepId);
+                sendPatienSurveyInfo();
+            }
+        });
+
+        if(completeDialog == null)
+            completeDialog = dialogBuilder.create();
+        completeDialog.show();
+    }
+
+    private void sendPatienSurveyInfo() {
+        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(getContext());
+        final String email = account.getEmail().replace('@', '_').replace('.', '_');
+
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference()
+                .child(GlobalVariable.keyPatient)
+                .child(GlobalVariable.keyList)
+                .child(email)
+                .child(GlobalVariable.keySurvey);
+
+        Map<String, Object> hopperUpdates = new HashMap<>();
+
+        hopperUpdates.put(GlobalVariable.getDate(), new SurveyInfo(Integer.toString(emojiId), Integer.toString(sleepId)));
+
+        databaseReference.updateChildren(hopperUpdates, new DatabaseReference.CompletionListener() {
+            @Override
+            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                if (databaseError != null) {
+                    Log.e(TAG, "SurveyInfo could not be saved " + databaseError.getMessage());
+                } else {
+                    Log.e(TAG, "SurveyInfo saved successfully.");
+                    // store
+                    JSONObject jsonObjectTemp = new JSONObject();
+                    try {
+                        jsonObjectTemp.put(getResources().getString(R.string.mood), emojiId);
+                        jsonObjectTemp.put(getResources().getString(R.string.sleep), sleepId);
+
+                        JSONObject jsonObject = new JSONObject();
+                        jsonObject.put(GlobalVariable.getDate(), jsonObjectTemp.toString());
+                        GlobalVariable.saveStringPreferences(getContext(), GlobalVariable.keySurvey, jsonObject.toString());
+
+                        hideSurveyButton();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+    }
+
+    public void showRatingDialog() {
+        android.support.v7.app.AlertDialog.Builder dialogBuilder = new android.support.v7.app.AlertDialog.Builder(getContext());
+        dialogBuilder.setView(ratingDialogView);
+
+        dialogBuilder.setTitle(getResources().getString(R.string.rating));
+        dialogBuilder.setPositiveButton("Done", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                //do something with edt.getText().toString();
+                (new FirebaseProcessor()).getPreventorRate(getContext(), gPreventorId);
+            }
+        });
+
+        if(ratingDialog == null)
+            ratingDialog = dialogBuilder.create();
+        ratingDialog.show();
     }
 }

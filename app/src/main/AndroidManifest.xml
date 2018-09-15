@@ -20,7 +20,12 @@
         <activity android:name=".SignIn"
             android:theme="@style/AppTheme.NoActionBar"></activity>
         <activity android:name=".ProfileActivity"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/Theme.AppCompat.Light"></activity>
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyB4wZQ0GYDiKp2xx9H8KaI6-hlN5KZ_Rr4"/>
+
     </application>
 
 </manifest>
