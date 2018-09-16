@@ -47,8 +47,6 @@ public class SleepFragment extends Fragment implements View.OnClickListener {
         view.findViewById(R.id.sleep2).setOnClickListener(this);
         view.findViewById(R.id.sleep3).setOnClickListener(this);
         view.findViewById(R.id.sleep4).setOnClickListener(this);
-        view.findViewById(R.id.sleep5).setOnClickListener(this);
-        view.findViewById(R.id.sleep6).setOnClickListener(this);
     }
 
     private void setSleep(int eId) {
@@ -78,12 +76,6 @@ public class SleepFragment extends Fragment implements View.OnClickListener {
                 break;
             case R.id.sleep4:
                 setSleep(3);
-                break;
-            case R.id.sleep5:
-                setSleep(4);
-                break;
-            case R.id.sleep6:
-                setSleep(5);
                 break;
         }
     }

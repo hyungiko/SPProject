@@ -80,6 +80,7 @@ public class MainView extends Fragment implements View.OnClickListener{
     private RelativeLayout surveyLayout;
     private int emojiId = -1;
     private int sleepId = -1;
+    private int motivId = -1;
     private View ratingDialogView;
     private RadioGroup radioGroupRating;
     private int index1 = 0;
@@ -176,6 +177,12 @@ public class MainView extends Fragment implements View.OnClickListener{
                         Bundle bndl = (Bundle) tmp;
                         sleepId = bndl.getInt(GlobalVariable.SLEEP_MSG);
 
+                        viewPager.setCurrentItem(2);
+                    }  else if(intent.getAction().equals(GlobalVariable.MOTIV_UPDATE)) {
+                        Object tmp = intent.getParcelableExtra(GlobalVariable.MOTIV_MSG);
+                        Bundle bndl = (Bundle) tmp;
+                        motivId = bndl.getInt(GlobalVariable.MOTIV_MSG);
+
                         // generate noti
                         showCompletelDialog();
                     } else if(intent.getAction().equals(GlobalVariable.RATE_UPDATE)) {
@@ -199,6 +206,7 @@ public class MainView extends Fragment implements View.OnClickListener{
         intentFilter.addAction(GlobalVariable.EMOJI_UPDATE);
         intentFilter.addAction(GlobalVariable.SLEEP_UPDATE);
         intentFilter.addAction(GlobalVariable.RATE_UPDATE);
+        intentFilter.addAction(GlobalVariable.MOTIV_UPDATE);
         bManager.registerReceiver(broadcastReceiver, intentFilter);
 
         handler = new Handler(){
@@ -736,7 +744,7 @@ public class MainView extends Fragment implements View.OnClickListener{
             }
         });
 
-        sectionsPagerAdapter.setCount(2);
+        sectionsPagerAdapter.setCount(3);
     }
 
     public void showCompletelDialog() {
@@ -770,7 +778,7 @@ public class MainView extends Fragment implements View.OnClickListener{
 
         Map<String, Object> hopperUpdates = new HashMap<>();
 
-        hopperUpdates.put(GlobalVariable.getDate(), new SurveyInfo(Integer.toString(emojiId), Integer.toString(sleepId)));
+        hopperUpdates.put(GlobalVariable.getDate(), new SurveyInfo(Integer.toString(emojiId), Integer.toString(sleepId), Integer.toString(motivId)));
 
         databaseReference.updateChildren(hopperUpdates, new DatabaseReference.CompletionListener() {
             @Override

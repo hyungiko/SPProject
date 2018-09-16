@@ -3,67 +3,71 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:weightSum="1"
+    android:background="#ffffff"
     android:gravity="center">
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:text="MOOD"
-        android:textSize="50sp"
-        android:gravity="center"
-        android:textColor="@android:color/white"
-        android:layout_weight="0.2"/>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="0.4"
-        android:orientation="horizontal"
-        android:weightSum="1"
-        android:layout_gravity="center"
-        android:gravity="center">
-        <Button
-            android:id="@+id/emoji1"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="0.3"
-            android:text="emoji_1"/>
-        <Button
-            android:id="@+id/emoji2"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="0.3"
-            android:text="emoji_2"/>
-        <Button
-            android:id="@+id/emoji3"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="0.3"
-            android:text="emoji_3"/>
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_gravity="center">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="MOOD"
+            android:textColor="#000000"
+            android:textSize="60sp"
+            android:gravity="center"/>
     </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="0.4"
+        android:layout_weight="0.25"
         android:orientation="horizontal"
-        android:weightSum="1"
         android:layout_gravity="center"
         android:gravity="center">
         <Button
+            android:id="@+id/emoji1"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:background="@drawable/mood2"/>
+        <TextView
+            android:layout_width="30dp"
+            android:layout_height="match_parent" />
+        <Button
+            android:id="@+id/emoji2"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:background="@drawable/mood3"/>
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.25"
+        android:orientation="horizontal"
+        android:weightSum="1"
+        android:gravity="center_horizontal">
+        <Button
+            android:id="@+id/emoji3"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:background="@drawable/mood4"/>
+        <TextView
+            android:layout_width="30dp"
+            android:layout_height="match_parent" />
+        <Button
             android:id="@+id/emoji4"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="0.3"
-            android:text="emoji_4"/>
-        <Button
-            android:id="@+id/emoji5"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="0.3"
-            android:text="emoji_5"/>
-        <Button
-            android:id="@+id/emoji6"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="0.3"
-            android:text="emoji_6"/>
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:background="@drawable/mood5"/>
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.1"
+        android:orientation="horizontal"
+        android:weightSum="1"
+        android:gravity="right">
     </LinearLayout>
 </LinearLayout>

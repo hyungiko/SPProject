@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.RadioGroup;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -26,6 +27,9 @@ import jordan.spproject.reference.GlobalVariable;
 public class ProfileActivity extends Activity implements View.OnClickListener {
     private String TAG = "ProfileActivity";
 
+    private RadioGroup radioGroup;
+    private int index1 = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,8 +40,16 @@ public class ProfileActivity extends Activity implements View.OnClickListener {
     }
 
     private void initiate() {
-        findViewById(R.id.btn_patient).setOnClickListener(this);
-        findViewById(R.id.btn_preventor).setOnClickListener(this);
+        radioGroup = (RadioGroup) findViewById(R.id.radioGroup1);
+        radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup radioGroup, int i) {
+                View radioButton = radioGroup.findViewById(i);
+                index1 = radioGroup.indexOfChild(radioButton);
+            }
+        });
+
+        findViewById(R.id.btn_proceed).setOnClickListener(this);
     }
 
 
@@ -108,12 +120,18 @@ public class ProfileActivity extends Activity implements View.OnClickListener {
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.btn_patient:
-                sendInfo(GlobalVariable.keyPatient);
+            case R.id.btn_proceed:
+                if(index1 == 0)
+                    sendInfo(GlobalVariable.keyPatient);
+                else
+                    sendInfo(GlobalVariable.keyPreventor);
                 break;
-            case R.id.btn_preventor:
-                sendInfo(GlobalVariable.keyPreventor);
-                break;
+//            case R.id.btn_patient:
+//                sendInfo(GlobalVariable.keyPatient);
+//                break;
+//            case R.id.btn_preventor:
+//                sendInfo(GlobalVariable.keyPreventor);
+//                break;
         }
     }
 }

@@ -427,7 +427,8 @@ public class FirebaseProcessor {
                         JSONObject jsonObjectSurvey = new JSONObject();
 
                         for (DataSnapshot singleSnapshot : dataSnapshot.getChildren()) {
-                            String date = singleSnapshot.getKey();
+                            String date = singleSnapshot.getKey().trim();
+                            String test = GlobalVariable.getDate();
                             if(date.equals(GlobalVariable.getDate())) {
                                 Map<String, Object> map = (Map<String, Object>) singleSnapshot.getValue();
                                 jsonObjectSurvey = new JSONObject(map);

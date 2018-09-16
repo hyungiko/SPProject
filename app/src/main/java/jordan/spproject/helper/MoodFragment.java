@@ -52,8 +52,6 @@ public class MoodFragment extends Fragment implements View.OnClickListener{
         view.findViewById(R.id.emoji2).setOnClickListener(this);
         view.findViewById(R.id.emoji3).setOnClickListener(this);
         view.findViewById(R.id.emoji4).setOnClickListener(this);
-        view.findViewById(R.id.emoji5).setOnClickListener(this);
-        view.findViewById(R.id.emoji6).setOnClickListener(this);
     }
 
     private void setEmoji(int eId) {
@@ -82,12 +80,6 @@ public class MoodFragment extends Fragment implements View.OnClickListener{
                 break;
             case R.id.emoji4:
                 setEmoji(3);
-                break;
-            case R.id.emoji5:
-                setEmoji(4);
-                break;
-            case R.id.emoji6:
-                setEmoji(5);
                 break;
         }
     }

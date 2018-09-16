@@ -14,13 +14,17 @@ public class GlobalVariable {
     static public final String sharedName	= "SP Project";
     static public final String ONLINE_PREVENTOR_UPDATE 	= "preventorUpdate";
     static public final String EMOJI_UPDATE 	= "emojiUpdate";
+    static public final String MOTIV_UPDATE 	= "motivUpdate";
+    static public final String PROFILE_UPDATE 	= "profileUpdate";
     static public final String SLEEP_UPDATE 	= "sleepUpdate";
     static public final String RATE_UPDATE 	= "rateUpdate";
     static public final String LIST_PREVENTOR = "listPreventor";
     static public final String LIST_HISTORY = "listPreventor";
+    static public final String LIST_PROFILE = "listProfile";
     static public final String LIST_RATE = "listRate";
     static public final String LIST_SURVEY = "listSurvey";
     static public final String EMOJI_MSG = "emoji_msg";
+    static public final String MOTIV_MSG = "motiv_msg";
     static public final String SLEEP_MSG = "sleep_msg";
     static public final String GREETING_MSG = "Hi, how are you?";
     static public final String START_MSG = "@@start";

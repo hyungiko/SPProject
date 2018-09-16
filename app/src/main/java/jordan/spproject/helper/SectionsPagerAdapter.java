@@ -3,6 +3,7 @@ package jordan.spproject.helper;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.util.Log;
 
 /**
  * Created by hyungiko on 9/14/18.
@@ -19,10 +20,13 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
     public Fragment getItem(int position) {
         // getItem is called to instantiate the fragment for the given page.
         // Return a SleepFragment (defined as a static inner class below).
+        Log.e("TAG", "pos: "+position);
         if(position == 0)
             return MoodFragment.newInstance(position + 1, count);
-        else
+        else if(position == 1)
             return SleepFragment.newInstance(position + 1, count);
+        else
+            return MotivationFragment.newInstance(position + 1, count);
     }
 
     @Override

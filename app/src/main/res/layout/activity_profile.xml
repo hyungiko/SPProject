@@ -2,16 +2,52 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:gravity="center">
 
-    <Button
-        android:id="@+id/btn_patient"
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingTop="20dp"
+        android:paddingLeft="20dp"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:text="Please choose one option."/>
+    <RadioGroup
+        android:id="@+id/radioGroup1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="20dp" >
+
+        <RadioButton
+            android:id="@+id/radioGoal1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Subject"
+            android:textSize="15sp"
+            android:checked="true" />
+        <RadioButton
+            android:id="@+id/radioGoal2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Preventor"
+            android:textSize="15sp" />
+    </RadioGroup>
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:text="Patient"/>
-    <Button
-        android:id="@+id/btn_preventor"
+        android:layout_height="20dp"></RelativeLayout>
+    <TextView
         android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:text="Preventor" />
+        android:layout_height="1dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:background="#000000"/>
+    <Button
+        android:id="@+id/btn_proceed"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:text="PROCEED"
+        android:textSize="20sp"/>
 </LinearLayout>

@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -83,37 +84,41 @@ public class ProfileView extends Fragment implements View.OnClickListener{
 
         if (requestCode == REQUEST_CODE_AUTOCOMPLETE_HOMETOWN) {
             Place place = PlaceAutocomplete.getPlace(getContext(), data);
-            Log.i(TAG, "Place: " + place.getName() +", "+place.getLatLng().latitude+", "+place.getLatLng().longitude+", "+place.getAddress());
+            if(place != null) {
+                Log.i(TAG, "Place: " + place.getName() +", "+place.getLatLng().latitude+", "+place.getLatLng().longitude+", "+place.getAddress());
 
-            JSONObject jsonObjectHometown = new JSONObject();
-            try {
-                jsonObjectHometown.put(getResources().getString(R.string.profile_address), place.getAddress());
-                jsonObjectHometown.put(getResources().getString(R.string.profile_lat), place.getLatLng().latitude);
-                jsonObjectHometown.put(getResources().getString(R.string.profile_lng), place.getLatLng().longitude);
+                JSONObject jsonObjectHometown = new JSONObject();
+                try {
+                    jsonObjectHometown.put(getResources().getString(R.string.profile_address), place.getAddress());
+                    jsonObjectHometown.put(getResources().getString(R.string.profile_lat), place.getLatLng().latitude);
+                    jsonObjectHometown.put(getResources().getString(R.string.profile_lng), place.getLatLng().longitude);
 
-                jsonObject.put(getResources().getString(R.string.profile_hometown), jsonObjectHometown.toString());
-                GlobalVariable.saveStringPreferences(getContext(), getResources().getString(R.string.profile), jsonObject.toString());
+                    jsonObject.put(getResources().getString(R.string.profile_hometown), jsonObjectHometown.toString());
+                    GlobalVariable.saveStringPreferences(getContext(), getResources().getString(R.string.profile), jsonObject.toString());
 
-                resetListView(getResources().getString(R.string.profile_hometown));
-            } catch (JSONException e) {
-                e.printStackTrace();
+                    resetListView(getResources().getString(R.string.profile_hometown));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
         } else if(requestCode == REQUEST_CODE_AUTOCOMPLETE_CUR_CITY) {
             Place place = PlaceAutocomplete.getPlace(getContext(), data);
-            Log.i(TAG, "Place: " + place.getName() +", "+place.getLatLng().latitude+", "+place.getLatLng().longitude+", "+place.getAddress());
+            if(place != null) {
+                Log.i(TAG, "Place: " + place.getName() +", "+place.getLatLng().latitude+", "+place.getLatLng().longitude+", "+place.getAddress());
 
-            JSONObject jsonObjectCurCity = new JSONObject();
-            try {
-                jsonObjectCurCity.put(getResources().getString(R.string.profile_address), place.getAddress());
-                jsonObjectCurCity.put(getResources().getString(R.string.profile_lat), place.getLatLng().latitude);
-                jsonObjectCurCity.put(getResources().getString(R.string.profile_lng), place.getLatLng().longitude);
+                JSONObject jsonObjectCurCity = new JSONObject();
+                try {
+                    jsonObjectCurCity.put(getResources().getString(R.string.profile_address), place.getAddress());
+                    jsonObjectCurCity.put(getResources().getString(R.string.profile_lat), place.getLatLng().latitude);
+                    jsonObjectCurCity.put(getResources().getString(R.string.profile_lng), place.getLatLng().longitude);
 
-                jsonObject.put(getResources().getString(R.string.profile_current_city), jsonObjectCurCity.toString());
-                GlobalVariable.saveStringPreferences(getContext(), getResources().getString(R.string.profile), jsonObject.toString());
+                    jsonObject.put(getResources().getString(R.string.profile_current_city), jsonObjectCurCity.toString());
+                    GlobalVariable.saveStringPreferences(getContext(), getResources().getString(R.string.profile), jsonObject.toString());
 
-                resetListView(getResources().getString(R.string.profile_current_city));
-            } catch (JSONException e) {
-                e.printStackTrace();
+                    resetListView(getResources().getString(R.string.profile_current_city));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -362,6 +367,26 @@ public class ProfileView extends Fragment implements View.OnClickListener{
         }
 
         adapter.notifyDataSetChanged();
+
+        int count = 0;
+        for(int i = 0; i < dataModels.size(); i++) {
+            Log.e(TAG, "datemodels: "+dataModels.get(i).getProfileContent());
+            if(!dataModels.get(i).getProfileContent().equals(""))
+                count++;
+        }
+
+        if(count == 8) {
+            // notify main activity
+            Intent i = new Intent(GlobalVariable.PROFILE_UPDATE);
+
+            Bundle mBundle = new Bundle();
+            mBundle.putString(GlobalVariable.LIST_PROFILE, "done");
+            i.putExtra(GlobalVariable.LIST_PROFILE, mBundle);
+            LocalBroadcastManager manager = LocalBroadcastManager.getInstance(getContext());
+            manager.sendBroadcast(i);
+        }
+
+        Log.e(TAG, "count: "+count);
     }
 
     private void setBirthDate() {
